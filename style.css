@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
 :root {
   --pitch-deep: #050505;
   --pitch-mid: #090e0c;
@@ -15,8 +15,8 @@
   --miss: #b85c46;
   --miss-bg: rgba(184, 92, 70, 0.14);
   --radius-card: 10px;
-  --font-display: "Barlow Condensed", sans-serif;
-  --font-body: "Barlow Condensed", system-ui, sans-serif;
+  --font-display: "Rajdhani", sans-serif;
+  --font-body: "Rajdhani", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
