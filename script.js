@@ -16,6 +16,7 @@
 ======================================================= */
 
 const API_BASE = "https://api.msmc.cc/api/fc26";
+const ALL_NAMES_URL = "https://api.msmc.cc/fc26/names.html";
 
 const DAILY_POOL = [
   "Erling Haaland", "Kylian Mbappe", "Lionel Messi", "Cristiano Ronaldo",
@@ -86,6 +87,53 @@ function fetchPlayerByName(name) {
 
 function fetchRandomPlayer() {
   return apiGet("/random/M");
+}
+
+// The API publishes a full reference list of every player name in the
+// database (thousands of entries) at this page — used to populate the
+// guess-box suggestions with the whole database instead of just the
+// curated daily pool.
+async function fetchAllPlayerNames() {
+  const res = await fetch(ALL_NAMES_URL);
+  if (!res.ok) throw new Error("Could not load player list");
+  const html = await res.text();
+
+  // The page is normally rendered as an HTML list — try that first.
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  let names = Array.from(doc.querySelectorAll("li"))
+    .map((li) => li.textContent.trim())
+    .filter(Boolean);
+
+  // Fallback: the page is served as raw markdown bullet lines ("- Name").
+  if (names.length < 20) {
+    names = html
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith("- "))
+      .map((line) => line.slice(2).trim())
+      .filter(Boolean);
+  }
+
+  return names;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+async function populateSuggestions() {
+  try {
+    const names = await fetchAllPlayerNames();
+    els.suggestions.innerHTML = names
+      .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+      .join("");
+  } catch (err) {
+    // If the full list can't be loaded, fall back to the curated pool
+    // so the suggestions box still shows something useful.
+    els.suggestions.innerHTML = DAILY_POOL
+      .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+      .join("");
+  }
 }
 
 async function resolveDailyTarget() {
@@ -167,8 +215,10 @@ const els = {
   closeRulesBtn: document.getElementById("close-rules")
 };
 
+// Show the curated pool immediately so the box isn't empty while the
+// full database list loads in the background.
 els.suggestions.innerHTML = DAILY_POOL
-  .map((name) => `<option value="${name}"></option>`)
+  .map((name) => `<option value="${escapeHtml(name)}"></option>`)
   .join("");
 
 /* ---------- rendering ---------- */
@@ -460,3 +510,4 @@ document.addEventListener("keydown", (evt) => {
 
 setActiveModeButton();
 startDaily();
+populateSuggestions();

@@ -1,10 +1,4 @@
-/* ---------------------------------------------------
-   Fifadle — tokens
-   Concept: a matchday team-sheet / stadium scoreboard.
-   Deep pitch green + chalk white + floodlight gold,
-   condensed jersey-style display type over a clean
-   grotesque body face.
---------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&display=swap');
 :root {
   --pitch-deep: #050505;
   --pitch-mid: #090e0c;
@@ -13,16 +7,16 @@
   --chalk: #f4f1e6;
   --chalk-dim: #c9d3c9;
   --gold: #16972b;
-  --gold-dim: #33a362;
-  --hit: #3fa66a;
+  --gold-dim: #16972b;
+  --hit: #499b30;
   --hit-bg: rgba(63, 166, 106, 0.18);
-  --close: #268f26;
+  --close: #b6800d;
   --close-bg: rgba(217, 164, 65, 0.16);
   --miss: #b85c46;
   --miss-bg: rgba(184, 92, 70, 0.14);
   --radius-card: 10px;
-  --font-display: "Oswald", "Arial Narrow", sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  --font-display: "Barlow Condensed", sans-serif;
+  --font-body: "Barlow Condensed", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
