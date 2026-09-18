@@ -1,0 +1,475 @@
+/* ---------------------------------------------------
+   Fifadle — tokens
+   Concept: a matchday team-sheet / stadium scoreboard.
+   Deep pitch green + chalk white + floodlight gold,
+   condensed jersey-style display type over a clean
+   grotesque body face.
+--------------------------------------------------- */
+:root {
+  --pitch-deep: #050505;
+  --pitch-mid: #090e0c;
+  --panel: #163527;
+  --panel-edge: #234a38;
+  --chalk: #f4f1e6;
+  --chalk-dim: #c9d3c9;
+  --gold: #16972b;
+  --gold-dim: #33a362;
+  --hit: #3fa66a;
+  --hit-bg: rgba(63, 166, 106, 0.18);
+  --close: #268f26;
+  --close-bg: rgba(217, 164, 65, 0.16);
+  --miss: #b85c46;
+  --miss-bg: rgba(184, 92, 70, 0.14);
+  --radius-card: 10px;
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--pitch-deep);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  min-height: 100%;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* faint pitch stripe texture behind everything */
+.pitch-lines {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 60px,
+      transparent 60px,
+      transparent 120px
+    );
+  pointer-events: none;
+}
+
+/* ---------------- header ---------------- */
+.matchhead {
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid var(--panel-edge);
+  background: linear-gradient(180deg, var(--pitch-mid), var(--pitch-deep));
+}
+
+.matchhead__inner {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.brand__badge {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--pitch-deep);
+  background: var(--gold);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.brand__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.7rem;
+  letter-spacing: 0.03em;
+  margin: 0;
+  color: var(--chalk);
+}
+
+.modeswitch {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  background: var(--pitch-deep);
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.modeswitch__btn {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--chalk-dim);
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.modeswitch__btn.is-active {
+  background: var(--gold);
+  color: var(--pitch-deep);
+}
+
+.iconbtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel);
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconbtn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ---------------- main ---------------- */
+.pitch {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.intro { margin-bottom: 22px; }
+
+.intro__text {
+  margin: 0 0 4px;
+  color: var(--chalk-dim);
+  font-size: 0.95rem;
+}
+
+.intro__meta {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+
+/* ---------------- guess bar ---------------- */
+.guessbar { margin-bottom: 26px; }
+
+#guess-form {
+  display: flex;
+  gap: 10px;
+}
+
+.guessbar__field { flex: 1; }
+
+#guess-input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--panel-edge);
+  background: var(--panel);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+#guess-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+#guess-input::placeholder { color: var(--chalk-dim); }
+
+.guessbar__submit {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  padding: 0 24px;
+  border-radius: var(--radius-card);
+  border: none;
+  background: var(--gold);
+  color: var(--pitch-deep);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.guessbar__submit:hover { filter: brightness(1.08); }
+.guessbar__submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.guessbar__status {
+  min-height: 20px;
+  margin: 10px 2px 0;
+  font-size: 0.85rem;
+  color: var(--miss);
+}
+
+.guessbar__status[data-tone="info"] { color: var(--chalk-dim); }
+.guessbar__status[data-tone="win"] { color: var(--hit); }
+
+/* ---------------- board ---------------- */
+.board {
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.board__header,
+.row {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr 1fr 1fr 0.7fr 0.6fr 0.7fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.board__header {
+  padding: 10px 14px;
+  background: var(--pitch-deep);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--chalk-dim);
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.col--player { padding-left: 40px; }
+
+.board__rows { display: flex; flex-direction: column; }
+
+.row {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--panel-edge);
+  animation: rowIn 0.25s ease both;
+}
+
+.row:last-child { border-bottom: none; }
+
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.row__player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  min-width: 0;
+}
+
+.row__thumb {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: var(--pitch-deep);
+  border-radius: 6px;
+}
+
+.row__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid transparent;
+}
+
+.chip--hit { background: var(--hit-bg); color: var(--hit); border-color: var(--hit); }
+.chip--close { background: var(--close-bg); color: var(--close); border-color: var(--close); }
+.chip--miss { background: var(--miss-bg); color: var(--miss); border-color: var(--miss); }
+
+.chip__arrow { font-size: 0.8rem; }
+
+/* ---------------- reveal ---------------- */
+.reveal {
+  margin-top: 26px;
+  padding: 20px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(135deg, var(--panel), var(--pitch-mid));
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  animation: rowIn 0.35s ease both;
+}
+
+.reveal__card img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.reveal__eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.reveal__name {
+  margin: 2px 0 4px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.reveal__sub {
+  margin: 0 0 12px;
+  color: var(--chalk-dim);
+  font-size: 0.9rem;
+}
+
+.reveal__actions { display: flex; gap: 10px; }
+
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--panel-edge);
+  color: var(--chalk);
+}
+
+.btn--ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+.btn--primary {
+  background: var(--gold);
+  color: var(--pitch-deep);
+}
+
+.btn--primary:hover { filter: brightness(1.08); }
+
+/* ---------------- footer ---------------- */
+.pitchfoot {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.78rem;
+  color: var(--chalk-dim);
+}
+
+.pitchfoot a { color: var(--gold); }
+
+/* ---------------- modal ---------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(6, 18, 13, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal[hidden] { display: none; }
+
+.modal__panel {
+  position: relative;
+  max-width: 440px;
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-card);
+  padding: 26px 24px;
+}
+
+.modal__panel h2 {
+  font-family: var(--font-display);
+  margin-top: 0;
+}
+
+.modal__panel p { color: var(--chalk-dim); font-size: 0.92rem; line-height: 1.5; }
+
+.modal__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--chalk-dim);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal__close:hover { color: var(--gold); }
+
+.legend {
+  list-style: none;
+  margin: 14px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--chalk-dim);
+  font-size: 0.88rem;
+}
+
+.legend .chip { width: 44px; flex-shrink: 0; }
+
+/* ---------------- responsive ---------------- */
+@media (max-width: 640px) {
+  .board__header,
+  .row {
+    grid-template-columns: 1.3fr 0.9fr 0.9fr 0.9fr 0.6fr 0.55fr 0.6fr;
+    font-size: 0.68rem;
+  }
+  .col--player { padding-left: 34px; }
+  .row__thumb { width: 24px; height: 24px; }
+  .chip { padding: 5px 2px; font-size: 0.68rem; }
+  .brand__title { font-size: 1.3rem; }
+  .modeswitch__btn { padding: 6px 10px; font-size: 0.72rem; }
+  .reveal { flex-direction: column; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row, .reveal { animation: none; }
+}

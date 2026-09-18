@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fifadle — Guess the FC 26 Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="pitch-lines" aria-hidden="true"></div>
+
+  <header class="matchhead">
+    <div class="matchhead__inner">
+      <div class="brand">
+        <span class="brand__badge">FC26</span>
+        <h1 class="brand__title">FIFADLE</h1>
+      </div>
+      <nav class="modeswitch" role="tablist" aria-label="Game mode">
+        <button class="modeswitch__btn is-active" id="mode-daily" role="tab" aria-selected="true">Daily Match</button>
+        <button class="modeswitch__btn" id="mode-practice" role="tab" aria-selected="false">Practice</button>
+      </nav>
+      <button class="iconbtn" id="open-rules" aria-haspopup="dialog" aria-label="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="pitch">
+    <section class="intro">
+      <p class="intro__text" id="mode-caption">One mystery FC 26 player, chosen fresh every day. Everyone gets the same one.</p>
+      <p class="intro__meta" id="attempt-counter">Attempt 0</p>
+    </section>
+
+    <section class="guessbar">
+      <form id="guess-form" autocomplete="off">
+        <div class="guessbar__field">
+          <input
+            type="text"
+            id="guess-input"
+            name="guess-input"
+            list="player-suggestions"
+            placeholder="Type a player's name…"
+            aria-label="Player name guess"
+            required
+          />
+          <datalist id="player-suggestions"></datalist>
+        </div>
+        <button type="submit" class="guessbar__submit">Guess</button>
+      </form>
+      <p class="guessbar__status" id="status-line" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="board" id="board" hidden>
+      <div class="board__header">
+        <span class="col col--player">Player</span>
+        <span class="col">Nation</span>
+        <span class="col">League</span>
+        <span class="col">Club</span>
+        <span class="col">Pos</span>
+        <span class="col">Age</span>
+        <span class="col">Rating</span>
+      </div>
+      <div class="board__rows" id="board-rows"></div>
+    </section>
+
+    <section class="reveal" id="reveal" hidden>
+      <div class="reveal__card">
+        <img id="reveal-img" alt="" />
+      </div>
+      <div class="reveal__text">
+        <p class="reveal__eyebrow" id="reveal-eyebrow">Full-time</p>
+        <h2 class="reveal__name" id="reveal-name"></h2>
+        <p class="reveal__sub" id="reveal-sub"></p>
+        <div class="reveal__actions">
+          <button class="btn btn--ghost" id="copy-results">Copy result</button>
+          <button class="btn btn--primary" id="play-again" hidden>New practice player</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pitchfoot">
+    <p>Player data pulled live from the <a href="https://api.msmc.cc/fc26/" target="_blank" rel="noopener">unofficial FC 26 player API</a>. Not affiliated with EA Sports.</p>
+  </footer>
+
+  <div class="modal" id="rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-title" hidden>
+    <div class="modal__panel">
+      <button class="modal__close" id="close-rules" aria-label="Close">×</button>
+      <h2 id="rules-title">How to play</h2>
+      <p>Guess the mystery FC 26 player. After each guess, every attribute is checked against the answer.</p>
+      <ul class="legend">
+        <li><span class="chip chip--hit">CB</span> Match — that attribute is correct.</li>
+        <li><span class="chip chip--close">MID</span> Close — same position group, or a nearby age/rating.</li>
+        <li><span class="chip chip--miss">ST</span> No match.</li>
+      </ul>
+      <p>For <strong>Age</strong> and <strong>Rating</strong>, an arrow shows whether the answer is higher (↑) or lower (↓) than your guess.</p>
+      <p>Daily Match gives everyone the same player for the day. Practice pulls a fresh random player from the database every round, with no limit on how many times you play.</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
