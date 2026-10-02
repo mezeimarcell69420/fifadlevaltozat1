@@ -23,6 +23,7 @@
         <button class="modeswitch__btn is-active" id="mode-daily" role="tab" aria-selected="true">Daily Match</button>
         <button class="modeswitch__btn" id="mode-practice" role="tab" aria-selected="false">Practice</button>
       </nav>
+      <button class="iconbtn" id="reset-daily" aria-label="Start a new daily game" title="New daily game">↻</button>
       <button class="iconbtn" id="open-rules" aria-haspopup="dialog" aria-label="How to play">?</button>
     </div>
   </header>
@@ -35,6 +36,7 @@
 
     <section class="guessbar">
       <form id="guess-form" autocomplete="off">
+        <button type="button" class="hintbtn" id="hint">Hint</button>
         <div class="guessbar__field">
           <input
             type="text"
@@ -99,6 +101,19 @@
       <p>Daily Match gives everyone the same player for the day. Practice pulls a fresh random player from the database every round, with no limit on how many times you play.</p>
     </div>
   </div>
+
+  <div class="modal" id="hint-modal" role="dialog" aria-modal="true" aria-labelledby="hint-title" hidden>
+    <div class="modal__panel hint__panel">
+      <button class="modal__close" id="close-hint" aria-label="Close">×</button>
+      <h2 id="hint-title">Here is your hint:</h2>
+      <p class="hint__text" id="hint-text"></p>
+    </div>
+  </div>
+
+  <aside id="side-ad" class="side-ad">
+    <button id="side-ad-close" class="side-ad__close" aria-label="Hirdetés bezárása">×</button>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzXU4buVL3JG4TL66DbpfSuZ0TmGBtct0lGPMH-vlEIcr7IP2VhODtvc1X&s=10" alt="Hirdetés" />
+  </aside>
 
   <script src="script.js"></script>
 </body>

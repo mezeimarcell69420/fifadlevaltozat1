@@ -12,26 +12,26 @@
    ever fails to resolve, the game automatically tries the
    next name in the list, so a bad entry won't break the game,
    but it's worth spot-checking / expanding this list yourself
-   against https://api.msmc.cc/api/fc26/player/name/<name>
+   against https://api.msmc.cc/api/fc26/player/name/<n>
 ======================================================= */
 
 const API_BASE = "https://api.msmc.cc/api/fc26";
 const ALL_NAMES_URL = "https://api.msmc.cc/fc26/names.html";
 
 const DAILY_POOL = [
-  "Erling Haaland", "Kylian Mbappe", "Lionel Messi", "Cristiano Ronaldo",
-  "Kevin De Bruyne", "Vinicius Junior", "Jude Bellingham", "Bukayo Saka",
+  "Erling Haaland", "Kylian Mbappé", "Lionel Messi", "Cristiano Ronaldo",
+  "Kevin De Bruyne", "Vinícius Júnior", "Jude Bellingham", "Bukayo Saka",
   "Phil Foden", "Rodri", "Harry Kane", "Robert Lewandowski",
   "Mohamed Salah", "Virgil van Dijk", "Alisson", "Thibaut Courtois",
   "Manuel Neuer", "Neymar Jr", "Antoine Griezmann", "Luka Modric",
-  "Casemiro", "Declan Rice", "Martin Odegaard", "Bruno Fernandes",
-  "Marcus Rashford", "Son Heung-min", "Achraf Hakimi", "Ruben Dias",
+  "Casemiro", "Declan Rice", "Martin Ødegaard", "Bruno Fernandes",
+  "Marcus Rashford", "Son Heung-min", "Achraf Hakimi", "Rúben Dias",
   "Joshua Kimmich", "Jamal Musiala", "Florian Wirtz", "Pedri",
   "Gavi", "Lamine Yamal", "Victor Osimhen", "Khvicha Kvaratskhelia",
-  "Rafael Leao", "Federico Valverde", "Alphonso Davies",
+  "Rafael Leão", "Federico Valverde", "Alphonso Davies",
   "Trent Alexander-Arnold", "Ederson", "Gianluigi Donnarumma",
-  "Julian Alvarez", "Darwin Nunez", "Ousmane Dembele", "Kingsley Coman",
-  "Frenkie de Jong", "William Saliba", "Nicolo Barella", "Nico Williams"
+  "Julián Alvarez", "Darwin Núñez", "Ousmane Dembélé", "Kingsley Coman",
+  "Frenkie de Jong", "William Saliba", "Nicolò Barella", "Nico Williams"
 ];
 
 const POSITION_GROUPS = {
@@ -121,18 +121,35 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
-async function populateSuggestions() {
+let allNamesCache = null; // fetched once, reused after that
+
+function fillSuggestions(names) {
+  els.suggestions.innerHTML = names
+    .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+    .join("");
+}
+
+async function populateSuggestions(mode) {
+  if (mode === "daily") {
+    // Daily Match: only the curated pool of well-known players.
+    fillSuggestions(DAILY_POOL);
+    return;
+  }
+
+  // Practice: every player in the database.
+  if (allNamesCache) {
+    fillSuggestions(allNamesCache);
+    return;
+  }
+
   try {
     const names = await fetchAllPlayerNames();
-    els.suggestions.innerHTML = names
-      .map((name) => `<option value="${escapeHtml(name)}"></option>`)
-      .join("");
+    allNamesCache = names;
+    fillSuggestions(names);
   } catch (err) {
     // If the full list can't be loaded, fall back to the curated pool
     // so the suggestions box still shows something useful.
-    els.suggestions.innerHTML = DAILY_POOL
-      .map((name) => `<option value="${escapeHtml(name)}"></option>`)
-      .join("");
+    fillSuggestions(DAILY_POOL);
   }
 }
 
@@ -159,8 +176,20 @@ const state = {
   target: null,
   guesses: [], // array of player objects, in guess order
   won: false,
-  loadingTarget: false
+  loadingTarget: false,
+  revealedHints: new Set() // which hint fields have already been shown this round
 };
+
+// Attributes the Hint button is allowed to reveal, with a friendly label
+// for each. Add/remove entries here to change what a hint can show.
+const HINT_FIELDS = [
+  { key: "Nation", label: "Nationality" },
+  { key: "League", label: "League" },
+  { key: "Team", label: "Club" },
+  { key: "Position", label: "Position" },
+  { key: "Age", label: "Age" },
+  { key: "OVR", label: "Rating" }
+];
 
 function storageKey() {
   return `fifadle:${todayStr()}`;
@@ -212,14 +241,17 @@ const els = {
   modePractice: document.getElementById("mode-practice"),
   rulesBtn: document.getElementById("open-rules"),
   rulesModal: document.getElementById("rules-modal"),
-  closeRulesBtn: document.getElementById("close-rules")
+  closeRulesBtn: document.getElementById("close-rules"),
+  hintBtn: document.getElementById("hint"),
+  hintModal: document.getElementById("hint-modal"),
+  closeHintBtn: document.getElementById("close-hint"),
+  hintText: document.getElementById("hint-text"),
+  sideAd: document.getElementById("side-ad"),
+  sideAdCloseBtn: document.getElementById("side-ad-close")
 };
 
-// Show the curated pool immediately so the box isn't empty while the
-// full database list loads in the background.
-els.suggestions.innerHTML = DAILY_POOL
-  .map((name) => `<option value="${escapeHtml(name)}"></option>`)
-  .join("");
+// Start with the curated pool showing (matches the default Daily Match mode).
+fillSuggestions(DAILY_POOL);
 
 /* ---------- rendering ---------- */
 
@@ -319,6 +351,29 @@ function hideReveal() {
   els.form.querySelector(".guessbar__submit").disabled = false;
 }
 
+/* ---------- hint ---------- */
+
+function showHint() {
+  if (!state.target) {
+    setStatus("Hints aren't ready yet — wait for the player to finish loading.", "error");
+    return;
+  }
+
+  // Pick from fields not yet shown this round; once every field has been
+  // revealed, start cycling through them again rather than locking up.
+  let available = HINT_FIELDS.filter((f) => !state.revealedHints.has(f.key));
+  if (available.length === 0) {
+    state.revealedHints.clear();
+    available = HINT_FIELDS;
+  }
+
+  const choice = available[Math.floor(Math.random() * available.length)];
+  state.revealedHints.add(choice.key);
+
+  els.hintText.textContent = `${choice.label}: ${state.target[choice.key]}`;
+  els.hintModal.hidden = false;
+}
+
 /* ---------- results sharing ---------- */
 
 function chipEmoji(cls) {
@@ -360,6 +415,7 @@ async function startDaily() {
   state.mode = "daily";
   state.guesses = [];
   state.won = false;
+  state.revealedHints.clear();
   hideReveal();
   els.modeCaption.textContent = "One mystery FC 26 player, chosen fresh every day. Everyone gets the same one.";
   els.playAgainBtn.hidden = true;
@@ -402,6 +458,7 @@ async function startPractice() {
   state.mode = "practice";
   state.guesses = [];
   state.won = false;
+  state.revealedHints.clear();
   hideReveal();
   els.modeCaption.textContent = "Unlimited rounds — a fresh random FC 26 player every time.";
   renderGuesses();
@@ -471,10 +528,10 @@ els.form.addEventListener("submit", handleGuessSubmit);
 
 els.modeDaily.addEventListener("click", () => {
   if (state.mode === "daily") return;
-  setActiveModeButton.call(null);
   state.mode = "daily";
   setActiveModeButton();
   startDaily();
+  populateSuggestions("daily");
 });
 
 els.modePractice.addEventListener("click", () => {
@@ -482,6 +539,7 @@ els.modePractice.addEventListener("click", () => {
   state.mode = "practice";
   setActiveModeButton();
   startPractice();
+  populateSuggestions("practice");
 });
 
 els.playAgainBtn.addEventListener("click", () => {
@@ -502,12 +560,29 @@ els.rulesModal.addEventListener("click", (evt) => {
   if (evt.target === els.rulesModal) els.rulesModal.hidden = true;
 });
 
+els.hintBtn.addEventListener("click", showHint);
+
+els.closeHintBtn.addEventListener("click", () => {
+  els.hintModal.hidden = true;
+});
+
+els.hintModal.addEventListener("click", (evt) => {
+  if (evt.target === els.hintModal) els.hintModal.hidden = true;
+});
+
+els.sideAdCloseBtn.addEventListener("click", () => {
+  els.sideAd.remove();
+});
+
 document.addEventListener("keydown", (evt) => {
-  if (evt.key === "Escape" && !els.rulesModal.hidden) els.rulesModal.hidden = true;
+  if (evt.key === "Escape") {
+    els.rulesModal.hidden = true;
+    els.hintModal.hidden = true;
+  }
 });
 
 /* ---------- boot ---------- */
 
 setActiveModeButton();
 startDaily();
-populateSuggestions();
+populateSuggestions("daily");
